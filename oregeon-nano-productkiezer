@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style>
+.dropdown-container {
+display: flex;
+flex-direction: column;
+align-items: left;
+width: 100%;
+}
+.dropdown-container label,
+.dropdown-container select {
+width: 48%;
+padding: 10px;
+margin: 5px;
+}
+#details {
+width: 100%;
+padding: 10px;
+margin: 5px;
+}
+</style>
+</head>
+<body>
+<div class="dropdown-container">
+<!-- Dropdown voor merken -->
+<br>
+Zoek hier de juiste ombouw set de kettingzaag aan te passen naar het Oregon Speed Cut Nano systeem.
+<label for=>Merk:</label>
+<select id="merk" onchange="updateModellen()">
+<!-- Gevuld via JavaScript -->
+</select>
+<!-- Dropdown voor modellen -->
+<label for="model">Model:</label>
+<select id="model" onchange="updateZaagbladen()">
+<!-- Gevuld via JavaScript -->
+</select>
+<!-- Dropdown voor zaagbladen -->
+<label for="zaagblad">Zaagblad:</label>
+<select id="zaagblad" onchange="showDetails()">
+<!-- Gevuld via JavaScript -->
+</select>
+</div>
+<!-- Gebied om details weer te geven -->
+<div id="details"></div>
+<script>
+// JSON-object met details voor elk model, inclusief zaagbladen
+const modelDetails = {
+"Stihl": {
+"MS150 / MS150T, MS151 / MS151T": {
+"25 cm": {"SDLBESTELNR": "635137"},
+"30 cm": {"SDLBESTELNR": "614383"},
+"35 cm": {"SDLBESTELNR": "614382"},
+},
+"MSA 161T": {
+"25 cm": {"SDLBESTELNR": "637260"},
+"30 cm": {"SDLBESTELNR": "637261"},
+"35 cm": {"SDLBESTELNR": "637262"},
+"40 cm": {"SDLBESTELNR": "637263"},
+},
+"MS170, MS171, MS180, MS181": {
+"30 cm": {"SDLBESTELNR": "637259"},
+"35 cm": {"SDLBESTELNR": "614384"},
+"40 cm": {"SDLBESTELNR": "614385"},
+},
+"MS192 / MS192T, MS193 / MS193T, MS194 / MS194T, MS200 / MS200T, MS201 / MS201T": {
+"25 cm": {"SDLBESTELNR": "614379"},
+"30 cm": {"SDLBESTELNR": "614380"},
+"35 cm": {"SDLBESTELNR": "614377"},
+"40 cm": {"SDLBESTELNR": "614381"},
+},
+},
+"Husqvarna": {
+"T435": {
+"25 cm": {"SDLBESTELNR": "614388"},
+"30 cm": {"SDLBESTELNR": "614391"},
+"35 cm": {"SDLBESTELNR": "614395"},
+"40 cm": {"SDLBESTELNR": "614398"},
+},
+"T525": {
+"25 cm": {"SDLBESTELNR": "637264"},
+"30 cm": {"SDLBESTELNR": "637265"},
+"35 cm": {"SDLBESTELNR": "637266"},
+"40 cm": {"SDLBESTELNR": "637267"},
+},
+"535i XP / T535i XP, 536Li XP / T536LiXP, 540i XP / T540i XP": {
+"25 cm": {"SDLBESTELNR": "614389"},
+"30 cm": {"SDLBESTELNR": "614392"},
+"35 cm": {"SDLBESTELNR": "614396"},
+"40 cm": {"SDLBESTELNR": "614399"},
+},
+"540, T540 XP, T540 XP II": {
+"25 cm": {"SDLBESTELNR": "614387"},
+"30 cm": {"SDLBESTELNR": "614390"},
+"35 cm": {"SDLBESTELNR": "614393"},
+"40 cm": {"SDLBESTELNR": "614397"},
+},
+},
+"Echo": {
+"CCS-58V": {
+"25 cm": {"SDLBESTELNR": "637231"},
+"30 cm": {"SDLBESTELNR": "637232"},
+"35 cm": {"SDLBESTELNR": "637233"},
+"40 cm": {"SDLBESTELNR": "637234"},
+},
+"CS-2511TES": {
+"25 cm": {"SDLBESTELNR": "637235"},
+"30 cm": {"SDLBESTELNR": "637236"},
+"35 cm": {"SDLBESTELNR": "637237"},
+"40 cm": {"SDLBESTELNR": "637238"},
+},
+"CS-303T, CS-362WES, CS-362TES": {
+"25 cm": {"SDLBESTELNR": "637255"},
+"30 cm": {"SDLBESTELNR": "637256"},
+"35 cm": {"SDLBESTELNR": "637257"},
+"40 cm": {"SDLBESTELNR": "637258"},
+},
+},
+};
+// Functie om dropdowns te vullen bij het laden van de pagina
+function fillDropdowns() {
+const merkDropdown = document.getElementById("merk");
+const modelDropdown = document.getElementById("model");
+const zaagbladDropdown = document.getElementById("zaagblad");
+// Voeg de placeholder toe voor merk dropdown
+const placeholderMerk = document.createElement("option");
+placeholderMerk.disabled = true;
+placeholderMerk.selected = true;
+placeholderMerk.value = "";
+placeholderMerk.text = "Selecteer merk";
+merkDropdown.add(placeholderMerk);
+// Vul de merken dropdown
+Object.keys(modelDetails).forEach(merk => {
+const option = document.createElement("option");
+option.value = merk;
+option.text = merk;
+merkDropdown.add(option);
+});
+// Voeg de placeholder toe voor model dropdown
+const placeholderModel = document.createElement("option");
+placeholderModel.disabled = true;
+placeholderModel.selected = true;
+placeholderModel.value = "";
+placeholderModel.text = "Selecteer model";
+modelDropdown.add(placeholderModel);
+// Voeg de placeholder toe voor zaagblad dropdown
+const placeholderZaagblad = document.createElement("option");
+placeholderZaagblad.disabled = true;
+placeholderZaagblad.selected = true;
+placeholderZaagblad.value = "";
+placeholderZaagblad.text = "Selecteer zaagblad";
+zaagbladDropdown.add(placeholderZaagblad);
+}
+// Functie om modellen bij te werken op basis van het geselecteerde merk
+function updateModellen() {
+const merkDropdown = document.getElementById("merk");
+const modelDropdown = document.getElementById("model");
+const zaagbladDropdown = document.getElementById("zaagblad");
+// Geselecteerd merk
+const selectedMerk = merkDropdown.value;
+// Leeg de modellen dropdown
+modelDropdown.innerHTML = "";
+// Voeg de placeholder toe voor model dropdown
+const placeholderModel = document.createElement("option");
+placeholderModel.disabled = true;
+placeholderModel.selected = true;
+placeholderModel.value = "";
+placeholderModel.text = "Selecteer model";
+modelDropdown.add(placeholderModel);
+// Vul de modellen dropdown met de bijbehorende modellen
+Object.keys(modelDetails[selectedMerk]).forEach(model => {
+const option = document.createElement("option");
+option.value = model;
+option.text = model;
+modelDropdown.add(option);
+});
+// Leeg de zaagbladen dropdown
+zaagbladDropdown.innerHTML = "";
+// Voeg de placeholder toe voor zaagblad dropdown
+const placeholderZaagblad = document.createElement("option");
+placeholderZaagblad.disabled = true;
+placeholderZaagblad.selected = true;
+placeholderZaagblad.value = "";
+placeholderZaagblad.text = "Selecteer zaagblad";
+zaagbladDropdown.add(placeholderZaagblad);
+// Reset de details wanneer het merk wordt gewijzigd
+document.getElementById("details").innerHTML = "";
+}
+// Functie om zaagbladen bij te werken op basis van het geselecteerde model
+function updateZaagbladen() {
+const merkDropdown = document.getElementById("merk");
+const modelDropdown = document.getElementById("model");
+const zaagbladDropdown = document.getElementById("zaagblad");
+// Geselecteerd merk en model
+const selectedMerk = merkDropdown.value;
+const selectedModel = modelDropdown.value;
+// Leeg de zaagbladen dropdown
+zaagbladDropdown.innerHTML = "";
+// Voeg de placeholder toe voor zaagblad dropdown
+const placeholderZaagblad = document.createElement("option");
+placeholderZaagblad.disabled = true;
+placeholderZaagblad.selected = true;
+placeholderZaagblad.value = "";
+placeholderZaagblad.text = "Selecteer zaagblad";
+zaagbladDropdown.add(placeholderZaagblad);
+// Vul de zaagbladen dropdown met de bijbehorende zaagbladen
+Object.keys(modelDetails[selectedMerk][selectedModel]).forEach(zaagblad => {
+const option = document.createElement("option");
+option.value = zaagblad;
+option.text = zaagblad;
+zaagbladDropdown.add(option);
+});
+// Reset de details wanneer het model wordt gewijzigd
+document.getElementById("details").innerHTML = "";
+}
+// Functie om details weer te geven voor het geselecteerde model en zaagblad
+function showDetails() {
+const merkDropdown = document.getElementById("merk");
+const modelDropdown = document.getElementById("model");
+const zaagbladDropdown = document.getElementById("zaagblad");
+const detailsContainer = document.getElementById("details");
+// Geselecteerd merk, model en zaagblad
+const selectedMerk = merkDropdown.value;
+const selectedModel = modelDropdown.value;
+const selectedZaagblad = zaagbladDropdown.value;
+// Haal de details op en toon ze
+const details = modelDetails[selectedMerk][selectedModel][selectedZaagblad];
+const url = `https://www.stiermandeleeuw.nl/${details.SDLBESTELNR}.html`;
+detailsContainer.innerHTML = `
+<p>De volgende conversie kit is gevonden op basis van de ingevoerde gegevens:</p>
+<br>
+<p>SDL Bestelnummer: ${details.SDLBESTELNR}</p>
+<p><a href="${url}" target="_blank">Klik hier om te bestellen</a></p>
+ `;
+}
+// Initialiseer dropdowns bij het laden van de pagina
+fillDropdowns();
+</script>
+</body>
+</html>
